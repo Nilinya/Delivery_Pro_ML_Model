@@ -1,0 +1,343 @@
+QUICK START GUIDE: TESTING THE COMPARISON API
+
+=============================================================================
+TEST 1: DISTANCE RANGE COMPARISON (Fastest Test)
+=============================================================================
+
+CURL Command (Windows PowerShell):
+
+$payload = @{
+    base_delivery = @{
+        Delivery_person_Age = 34
+        Delivery_person_Ratings = 4.5
+        Restaurant_latitude = 12.913041
+        Restaurant_longitude = 77.683237
+        Delivery_location_latitude = 13.043041
+        Delivery_location_longitude = 77.813237
+        Order_Date = "25-03-2022"
+        Time_Orderd = "19:45:00"
+        Time_Order_picked = "19:50:00"
+        Weatherconditions = "conditions Stormy"
+        Road_traffic_density = "Jam"
+        Vehicle_condition = 2
+        Type_of_order = "Snack"
+        Type_of_vehicle = "scooter"
+        multiple_deliveries = 1
+        Festival = "No"
+        City = "Metropolitian"
+    }
+    comparison_type = "distance_ranges"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "http://localhost:5000/api/predict-comparison" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $payload | Select-Object -ExpandProperty Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
+
+
+CURL Command (Linux/Mac):
+
+curl -X POST http://localhost:5000/api/predict-comparison \
+  -H "Content-Type: application/json" \
+  -d '{
+    "base_delivery": {
+      "Delivery_person_Age": 34,
+      "Delivery_person_Ratings": 4.5,
+      "Restaurant_latitude": 12.913041,
+      "Restaurant_longitude": 77.683237,
+      "Delivery_location_latitude": 13.043041,
+      "Delivery_location_longitude": 77.813237,
+      "Order_Date": "25-03-2022",
+      "Time_Orderd": "19:45:00",
+      "Time_Order_picked": "19:50:00",
+      "Weatherconditions": "conditions Stormy",
+      "Road_traffic_density": "Jam",
+      "Vehicle_condition": 2,
+      "Type_of_order": "Snack",
+      "Type_of_vehicle": "scooter",
+      "multiple_deliveries": 1,
+      "Festival": "No",
+      "City": "Metropolitian"
+    },
+    "comparison_type": "distance_ranges"
+  }' | jq .
+
+=============================================================================
+TEST 2: VEHICLE TYPE COMPARISON
+=============================================================================
+
+CURL Command (Windows PowerShell):
+
+$payload = @{
+    base_delivery = @{
+        Delivery_person_Age = 34
+        Delivery_person_Ratings = 4.5
+        Restaurant_latitude = 12.913041
+        Restaurant_longitude = 77.683237
+        Delivery_location_latitude = 13.043041
+        Delivery_location_longitude = 77.813237
+        Order_Date = "25-03-2022"
+        Time_Orderd = "19:45:00"
+        Time_Order_picked = "19:50:00"
+        Weatherconditions = "conditions Sunny"
+        Road_traffic_density = "Medium"
+        Vehicle_condition = 2
+        Type_of_order = "Snack"
+        Type_of_vehicle = "scooter"
+        multiple_deliveries = 1
+        Festival = "No"
+        City = "Urban"
+    }
+    comparison_type = "vehicle_types"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "http://localhost:5000/api/predict-comparison" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $payload | Select-Object -ExpandProperty Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
+
+=============================================================================
+TEST 3: WEATHER IMPACT COMPARISON
+=============================================================================
+
+CURL Command (Windows PowerShell):
+
+$payload = @{
+    base_delivery = @{
+        Delivery_person_Age = 28
+        Delivery_person_Ratings = 4.7
+        Restaurant_latitude = 22.745049
+        Restaurant_longitude = 75.892471
+        Delivery_location_latitude = 22.765049
+        Delivery_location_longitude = 75.912471
+        Order_Date = "19-03-2022"
+        Time_Orderd = "11:30:00"
+        Time_Order_picked = "11:45:00"
+        Weatherconditions = "conditions Sunny"
+        Road_traffic_density = "High"
+        Vehicle_condition = 2
+        Type_of_order = "Meal"
+        Type_of_vehicle = "motorcycle"
+        multiple_deliveries = 0
+        Festival = "No"
+        City = "Urban"
+    }
+    comparison_type = "weather_impact"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "http://localhost:5000/api/predict-comparison" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $payload | Select-Object -ExpandProperty Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
+
+=============================================================================
+TEST 4: TRAFFIC IMPACT COMPARISON
+=============================================================================
+
+CURL Command (Windows PowerShell):
+
+$payload = @{
+    base_delivery = @{
+        Delivery_person_Age = 32
+        Delivery_person_Ratings = 4.5
+        Restaurant_latitude = 17.431668
+        Restaurant_longitude = 78.408321
+        Delivery_location_latitude = 17.461668
+        Delivery_location_longitude = 78.438321
+        Order_Date = "11-03-2022"
+        Time_Orderd = "21:20:00"
+        Time_Order_picked = "21:30:00"
+        Weatherconditions = "conditions Cloudy"
+        Road_traffic_density = "Jam"
+        Vehicle_condition = 0
+        Type_of_order = "Buffet"
+        Type_of_vehicle = "motorcycle"
+        multiple_deliveries = 1
+        Festival = "No"
+        City = "Urban"
+    }
+    comparison_type = "traffic_impact"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "http://localhost:5000/api/predict-comparison" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $payload | Select-Object -ExpandProperty Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
+
+=============================================================================
+TEST 5: PERSONNEL RATING COMPARISON
+=============================================================================
+
+CURL Command (Windows PowerShell):
+
+$payload = @{
+    base_delivery = @{
+        Delivery_person_Age = 26
+        Delivery_person_Ratings = 4.5
+        Restaurant_latitude = 19.176269
+        Restaurant_longitude = 72.836721
+        Delivery_location_latitude = 19.266269
+        Delivery_location_longitude = 72.926721
+        Order_Date = "02-04-2022"
+        Time_Orderd = "20:25:00"
+        Time_Order_picked = "20:35:00"
+        Weatherconditions = "conditions Sandstorms"
+        Road_traffic_density = "Jam"
+        Vehicle_condition = 2
+        Type_of_order = "Buffet"
+        Type_of_vehicle = "electric_scooter"
+        multiple_deliveries = 1
+        Festival = "No"
+        City = "Metropolitian"
+    }
+    comparison_type = "personnel_ratings"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "http://localhost:5000/api/predict-comparison" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $payload | Select-Object -ExpandProperty Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
+
+=============================================================================
+EXPECTED RESPONSE STRUCTURE FOR ALL TESTS
+=============================================================================
+
+{
+  "success": true,
+  "base_prediction": <float>,              // Time prediction for base delivery
+  "comparison_type": "<string>",           // The comparison type requested
+  "x_axis_label": "<string>",              // Label for chart visualization
+  "count": <int>,                          // Number of scenarios analyzed
+  "comparisons": [                         // Array of scenario predictions
+    {
+      "label": "<string>",                 // Scenario description
+      "predicted_time": <float>            // Predicted delivery time (minutes)
+    },
+    ...more scenarios...
+  ],
+  "insights": {                            // Business insights
+    "base_prediction": <float>,            // Base delivery time
+    "fastest_option": "<string>",          // Fastest scenario
+    "fastest_time": <float>,               // Time of fastest scenario
+    "slowest_option": "<string>",          // Slowest scenario
+    "slowest_time": <float>,               // Time of slowest scenario
+    "average_time": <float>,               // Average time across all scenarios
+    "time_variance": <float>,              // Max - Min time gap
+    "recommendation": "<string>",          // Business recommendation
+    // Additional fields vary by comparison_type:
+    "cost_effective": "<string>",          // For vehicle_types comparison
+    "weather_impact": "<string>",          // For weather_impact comparison
+    "traffic_impact": "<string>"           // For traffic_impact comparison
+  },
+  "message": "<string>",                   // Summary message
+}
+
+=============================================================================
+PYTHON CLIENT EXAMPLE
+=============================================================================
+
+import requests
+import json
+
+# Server URL
+BASE_URL = "http://localhost:5000"
+
+# Base delivery data
+base_delivery = {
+    "Delivery_person_Age": 34,
+    "Delivery_person_Ratings": 4.5,
+    "Restaurant_latitude": 12.913041,
+    "Restaurant_longitude": 77.683237,
+    "Delivery_location_latitude": 13.043041,
+    "Delivery_location_longitude": 77.813237,
+    "Order_Date": "25-03-2022",
+    "Time_Orderd": "19:45:00",
+    "Time_Order_picked": "19:50:00",
+    "Weatherconditions": "conditions Stormy",
+    "Road_traffic_density": "Jam",
+    "Vehicle_condition": 2,
+    "Type_of_order": "Snack",
+    "Type_of_vehicle": "scooter",
+    "multiple_deliveries": 1,
+    "Festival": "No",
+    "City": "Metropolitian"
+}
+
+# Test all comparison types
+comparison_types = [
+    "distance_ranges",
+    "vehicle_types",
+    "weather_impact",
+    "traffic_impact",
+    "personnel_ratings"
+]
+
+for comp_type in comparison_types:
+    payload = {
+        "base_delivery": base_delivery,
+        "comparison_type": comp_type
+    }
+    
+    response = requests.post(
+        f"{BASE_URL}/api/predict-comparison",
+        json=payload,
+        headers={"Content-Type": "application/json"}
+    )
+    
+    if response.status_code == 200:
+        result = response.json()
+        print(f"\n{'='*60}")
+        print(f"Comparison Type: {comp_type}")
+        print(f"{'='*60}")
+        print(f"Base Prediction: {result['base_prediction']} minutes")
+        print(f"Fastest: {result['insights']['fastest_time']} min ({result['insights']['fastest_option']})")
+        print(f"Slowest: {result['insights']['slowest_time']} min ({result['insights']['slowest_option']})")
+        print(f"Time Variance: {result['insights']['time_variance']} min")
+        print(f"Recommendation: {result['insights']['recommendation']}")
+        
+        print(f"\nAll Scenarios:")
+        for i, comp in enumerate(result['comparisons'], 1):
+            print(f"  {i}. {comp['label']:<50} → {comp['predicted_time']:>6.1f} min")
+    else:
+        print(f"Error for {comp_type}: {response.status_code}")
+        print(response.json())
+
+=============================================================================
+VALIDATION CHECKLIST
+=============================================================================
+
+After implementation, verify:
+
+[ ] Endpoint created at POST /api/predict-comparison
+[ ] Base prediction matches /api/predict with same input
+[ ] Distance ranges scenario generates 5 scenarios
+[ ] Vehicle types scenario generates 3 scenarios
+[ ] Weather impact scenario generates 6 scenarios
+[ ] Traffic impact scenario generates 4 scenarios
+[ ] Personnel ratings scenario generates 4 scenarios
+[ ] Insights include fastest/slowest/average/variance
+[ ] X-axis labels are correct for each comparison type
+[ ] Error messages are descriptive for invalid inputs
+[ ] Response time < 2 seconds per request
+[ ] All existing endpoints still work (/api/predict, /api/predict-batch, /api/health)
+
+=============================================================================
+TROUBLESHOOTING
+=============================================================================
+
+Problem: "Model not loaded"
+Solution: Run `python train_model.py` first to train and save the model
+
+Problem: KeyError on specific field
+Solution: Ensure all required fields are present in base_delivery (check COMPARISON_API_DOCS.txt)
+
+Problem: "Invalid comparison_type"
+Solution: Use only: distance_ranges, vehicle_types, weather_impact, traffic_impact, personnel_ratings
+
+Problem: Slow response (>2 sec)
+Solution: This is OK for distance_ranges (slowest), faster for others
+
+Problem: NaN or null in results
+Solution: Check that base_delivery coordinates are valid (not 0.0, 0.0)
+
+=============================================================================

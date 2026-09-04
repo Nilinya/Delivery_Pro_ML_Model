@@ -1,0 +1,592 @@
+"""
+=============================================================================
+                   COMPARISON API DOCUMENTATION
+              Delivery Time Prediction - Scenario Analysis
+=============================================================================
+
+NEW ENDPOINT: /api/predict-comparison (POST)
+
+PURPOSE:
+Generate delivery time predictions across different scenarios to support:
+- Cost optimization (vehicle type, personnel selection)
+- Speed optimization (best conditions, resource allocation)
+- Resource planning (time variance analysis)
+- Customer SLA management (realistic delivery windows)
+
+=============================================================================
+REQUEST FORMAT
+=============================================================================
+
+Endpoint: POST /api/predict-comparison
+Content-Type: application/json
+
+REQUIRED FIELDS:
+{
+    "base_delivery": { ... },           // Standard delivery object (same as /api/predict)
+    "comparison_type": "string"         // One of 5 comparison types below
+}
+
+COMPARISON TYPES:
+
+1. "distance_ranges" (DEFAULT)
+   - X-axis: Distance (km)
+   - Scenarios: 1-5km, 5-10km, 10-20km, 20-50km, 50+km
+   - Use case: Understanding delivery time vs distance mapping
+   - Business value: Plan multi-stop routes, estimate SLA by distance
+
+2. "vehicle_types"
+   - X-axis: Vehicle Type (Motorcycle, Scooter, Electric Scooter)
+   - Varies: Type_of_vehicle
+   - Use case: Cost vs speed trade-off analysis
+   - Business value: Optimize vehicle fleet allocation
+   - Note: Motorcycle = best speed, Scooter = mid-range, E-scooter = eco-friendly
+
+3. "weather_impact"
+   - X-axis: Weather Condition (Sunny, Cloudy, Fog, Stormy, Sandstorms, Windy)
+   - Varies: Weatherconditions
+   - Use case: Risk assessment and contingency planning
+   - Business value: Identify high-variance scenarios, adjust SLAs
+
+4. "traffic_impact"
+   - X-axis: Traffic Density (Low, Medium, High, Jam)
+   - Varies: Road_traffic_density
+   - Use case: Peak-hour optimization and time slot recommendations
+   - Business value: Recommend best delivery windows, optimize routing
+
+5. "personnel_ratings"
+   - X-axis: Personnel Rating (3.5⭐, 4.0⭐, 4.5⭐, 5.0⭐)
+   - Varies: Delivery_person_Ratings
+   - Use case: Personnel assignment and SLA guarantees
+   - Business value: Match highly-rated personnel to time-sensitive orders
+
+=============================================================================
+BASE_DELIVERY OBJECT FIELDS
+=============================================================================
+
+Same as /api/predict endpoint. Example:
+
+{
+    "Delivery_person_Age": 32,
+    "Delivery_person_Ratings": 4.5,
+    "Restaurant_latitude": 12.913041,
+    "Restaurant_longitude": 77.683237,
+    "Delivery_location_latitude": 13.043041,
+    "Delivery_location_longitude": 77.813237,
+    "Order_Date": "25-03-2022",
+    "Time_Orderd": "19:45:00",
+    "Time_Order_picked": "19:50:00",
+    "Weatherconditions": "conditions Stormy",
+    "Road_traffic_density": "Jam",
+    "Vehicle_condition": 2,
+    "Type_of_order": "Snack",
+    "Type_of_vehicle": "scooter",
+    "multiple_deliveries": 1,
+    "Festival": "No",
+    "City": "Metropolitian"
+}
+
+REQUIRED fields (must not be null):
+- Delivery_person_Age
+- Delivery_person_Ratings
+- Restaurant_latitude, Restaurant_longitude
+- Delivery_location_latitude, Delivery_location_longitude
+- Order_Date, Time_Orderd, Time_Order_picked
+- Weatherconditions
+- Road_traffic_density
+- Vehicle_condition
+- Type_of_order
+- Type_of_vehicle
+- multiple_deliveries
+- Festival
+- City
+
+=============================================================================
+EXAMPLE REQUEST 1: DISTANCE RANGE COMPARISON
+=============================================================================
+
+POST /api/predict-comparison
+Content-Type: application/json
+
+{
+    "base_delivery": {
+        "Delivery_person_Age": 34,
+        "Delivery_person_Ratings": 4.5,
+        "Restaurant_latitude": 12.913041,
+        "Restaurant_longitude": 77.683237,
+        "Delivery_location_latitude": 13.043041,
+        "Delivery_location_longitude": 77.813237,
+        "Order_Date": "25-03-2022",
+        "Time_Orderd": "19:45:00",
+        "Time_Order_picked": "19:50:00",
+        "Weatherconditions": "conditions Stormy",
+        "Road_traffic_density": "Jam",
+        "Vehicle_condition": 2,
+        "Type_of_order": "Snack",
+        "Type_of_vehicle": "scooter",
+        "multiple_deliveries": 1,
+        "Festival": "No",
+        "City": "Metropolitian"
+    },
+    "comparison_type": "distance_ranges"
+}
+
+EXPECTED RESPONSE:
+
+{
+    "success": true,
+    "base_prediction": 33.0,
+    "comparison_type": "distance_ranges",
+    "x_axis_label": "Distance (km)",
+    "count": 5,
+    "comparisons": [
+        {
+            "label": "1-5 km (current vehicle & conditions)",
+            "predicted_time": 12.5
+        },
+        {
+            "label": "5-10 km (current vehicle & conditions)",
+            "predicted_time": 18.3
+        },
+        {
+            "label": "10-20 km (current vehicle & conditions)",
+            "predicted_time": 28.6
+        },
+        {
+            "label": "20-50 km (current vehicle & conditions)",
+            "predicted_time": 42.1
+        },
+        {
+            "label": "50+ km (current vehicle & conditions)",
+            "predicted_time": 67.8
+        }
+    ],
+    "insights": {
+        "base_prediction": 33.0,
+        "fastest_option": "1-5 km (current vehicle & conditions)",
+        "fastest_time": 12.5,
+        "slowest_option": "50+ km (current vehicle & conditions)",
+        "slowest_time": 67.8,
+        "average_time": 33.9,
+        "time_variance": 55.3,
+        "recommendation": "Time increases significantly beyond 20km. Plan accordingly."
+    },
+    "message": "Generated 5 comparison predictions"
+}
+
+BUSINESS INTERPRETATION:
+- For 5-10km deliveries: expect ~18.3 minutes (good for SLA mapping)
+- Time variance of 55.3 minutes shows significant distance impact
+- Recommendation: Set longer SLA windows for 20+ km orders to reduce failures
+
+=============================================================================
+EXAMPLE REQUEST 2: VEHICLE TYPE COMPARISON
+=============================================================================
+
+POST /api/predict-comparison
+Content-Type: application/json
+
+{
+    "base_delivery": {
+        "Delivery_person_Age": 34,
+        "Delivery_person_Ratings": 4.5,
+        "Restaurant_latitude": 12.913041,
+        "Restaurant_longitude": 77.683237,
+        "Delivery_location_latitude": 13.043041,
+        "Delivery_location_longitude": 77.813237,
+        "Order_Date": "25-03-2022",
+        "Time_Orderd": "19:45:00",
+        "Time_Order_picked": "19:50:00",
+        "Weatherconditions": "conditions Sunny",
+        "Road_traffic_density": "Medium",
+        "Vehicle_condition": 2,
+        "Type_of_order": "Snack",
+        "Type_of_vehicle": "scooter",
+        "multiple_deliveries": 1,
+        "Festival": "No",
+        "City": "Urban"
+    },
+    "comparison_type": "vehicle_types"
+}
+
+EXPECTED RESPONSE:
+
+{
+    "success": true,
+    "base_prediction": 20.5,
+    "comparison_type": "vehicle_types",
+    "x_axis_label": "Vehicle Type",
+    "count": 3,
+    "comparisons": [
+        {
+            "label": "Motorcycle @ 10-20 km",
+            "predicted_time": 18.2
+        },
+        {
+            "label": "Scooter @ 10-20 km",
+            "predicted_time": 21.5
+        },
+        {
+            "label": "Electric Scooter @ 10-20 km",
+            "predicted_time": 22.8
+        }
+    ],
+    "insights": {
+        "base_prediction": 20.5,
+        "fastest_option": "Motorcycle @ 10-20 km",
+        "fastest_time": 18.2,
+        "slowest_option": "Electric Scooter @ 10-20 km",
+        "slowest_time": 22.8,
+        "average_time": 20.8,
+        "time_variance": 4.6,
+        "cost_effective": "Scooter @ 10-20 km",
+        "recommendation": "Motorcycle offers best speed. Scooter is cost-effective middle ground."
+    },
+    "message": "Generated 3 comparison predictions"
+}
+
+BUSINESS INTERPRETATION:
+- SPEED: Motorcycle saves 4.6 minutes vs E-scooter (22% faster)
+- COST: Scooter is middle-ground (only 3.3 min slower, significantly cheaper fuel)
+- DECISION: For time-sensitive orders, use Motorcycle. For cost optimization, use Scooter.
+
+=============================================================================
+EXAMPLE REQUEST 3: WEATHER IMPACT
+=============================================================================
+
+POST /api/predict-comparison
+Content-Type: application/json
+
+{
+    "base_delivery": {
+        "Delivery_person_Age": 28,
+        "Delivery_person_Ratings": 4.7,
+        "Restaurant_latitude": 22.745049,
+        "Restaurant_longitude": 75.892471,
+        "Delivery_location_latitude": 22.765049,
+        "Delivery_location_longitude": 75.912471,
+        "Order_Date": "19-03-2022",
+        "Time_Orderd": "11:30:00",
+        "Time_Order_picked": "11:45:00",
+        "Weatherconditions": "conditions Sunny",
+        "Road_traffic_density": "High",
+        "Vehicle_condition": 2,
+        "Type_of_order": "Meal",
+        "Type_of_vehicle": "motorcycle",
+        "multiple_deliveries": 0,
+        "Festival": "No",
+        "City": "Urban"
+    },
+    "comparison_type": "weather_impact"
+}
+
+EXPECTED RESPONSE:
+
+{
+    "success": true,
+    "base_prediction": 24.0,
+    "comparison_type": "weather_impact",
+    "x_axis_label": "Weather Condition",
+    "count": 6,
+    "comparisons": [
+        {
+            "label": "Sunny weather @ 1-5 km",
+            "predicted_time": 14.2
+        },
+        {
+            "label": "Cloudy weather @ 1-5 km",
+            "predicted_time": 15.1
+        },
+        {
+            "label": "Fog weather @ 1-5 km",
+            "predicted_time": 17.8
+        },
+        {
+            "label": "Stormy weather @ 1-5 km",
+            "predicted_time": 19.3
+        },
+        {
+            "label": "Sandstorms weather @ 1-5 km",
+            "predicted_time": 21.6
+        },
+        {
+            "label": "Windy weather @ 1-5 km",
+            "predicted_time": 18.4
+        }
+    ],
+    "insights": {
+        "base_prediction": 24.0,
+        "fastest_option": "Sunny weather @ 1-5 km",
+        "fastest_time": 14.2,
+        "slowest_option": "Sandstorms weather @ 1-5 km",
+        "slowest_time": 21.6,
+        "average_time": 17.7,
+        "time_variance": 7.4,
+        "weather_impact": "Sandstorms conditions add ~7.4 min vs Sunny"
+    },
+    "message": "Generated 6 comparison predictions"
+}
+
+BUSINESS INTERPRETATION:
+- WEATHER RISK: Sandstorms add 7.4 minutes (52% increase) vs Sunny conditions
+- SLA ADJUSTMENTS: Budget extra 5-10 minutes for monsoon season deliveries
+- RISK HIGH: Sandstorms show highest variance = lower delivery reliability
+
+=============================================================================
+EXAMPLE REQUEST 4: TRAFFIC IMPACT
+=============================================================================
+
+POST /api/predict-comparison
+Content-Type: application/json
+
+{
+    "base_delivery": {
+        "Delivery_person_Age": 32,
+        "Delivery_person_Ratings": 4.5,
+        "Restaurant_latitude": 17.431668,
+        "Restaurant_longitude": 78.408321,
+        "Delivery_location_latitude": 17.461668,
+        "Delivery_location_longitude": 78.438321,
+        "Order_Date": "11-03-2022",
+        "Time_Orderd": "21:20:00",
+        "Time_Order_picked": "21:30:00",
+        "Weatherconditions": "conditions Cloudy",
+        "Road_traffic_density": "Jam",
+        "Vehicle_condition": 0,
+        "Type_of_order": "Buffet",
+        "Type_of_vehicle": "motorcycle",
+        "multiple_deliveries": 1,
+        "Festival": "No",
+        "City": "Urban"
+    },
+    "comparison_type": "traffic_impact"
+}
+
+EXPECTED RESPONSE:
+
+{
+    "success": true,
+    "base_prediction": 26.0,
+    "comparison_type": "traffic_impact",
+    "x_axis_label": "Traffic Density",
+    "count": 4,
+    "comparisons": [
+        {
+            "label": "Low traffic @ 5-10 km",
+            "predicted_time": 12.3
+        },
+        {
+            "label": "Medium traffic @ 5-10 km",
+            "predicted_time": 15.8
+        },
+        {
+            "label": "High traffic @ 5-10 km",
+            "predicted_time": 19.5
+        },
+        {
+            "label": "Jam traffic @ 5-10 km",
+            "predicted_time": 28.7
+        }
+    ],
+    "insights": {
+        "base_prediction": 26.0,
+        "fastest_option": "Low traffic @ 5-10 km",
+        "fastest_time": 12.3,
+        "slowest_option": "Jam traffic @ 5-10 km",
+        "slowest_time": 28.7,
+        "average_time": 19.1,
+        "time_variance": 16.4,
+        "traffic_impact": "Jam conditions add ~16.4 min vs Low traffic"
+    },
+    "message": "Generated 4 comparison predictions"
+}
+
+BUSINESS INTERPRETATION:
+- PEAK-HOUR RISK: Jam traffic adds 16.4 minutes (135% increase!)
+- TIME SLOT OPTIMIZATION: Schedule low-priority deliveries during low-traffic hours
+- SLA WINDOW: During rush hour, double standard delivery time estimate
+
+=============================================================================
+EXAMPLE REQUEST 5: PERSONNEL RATING COMPARISON
+=============================================================================
+
+POST /api/predict-comparison
+Content-Type: application/json
+
+{
+    "base_delivery": {
+        "Delivery_person_Age": 26,
+        "Delivery_person_Ratings": 4.5,
+        "Restaurant_latitude": 19.176269,
+        "Restaurant_longitude": 72.836721,
+        "Delivery_location_latitude": 19.266269,
+        "Delivery_location_longitude": 72.926721,
+        "Order_Date": "02-04-2022",
+        "Time_Orderd": "20:25:00",
+        "Time_Order_picked": "20:35:00",
+        "Weatherconditions": "conditions Sandstorms",
+        "Road_traffic_density": "Jam",
+        "Vehicle_condition": 2,
+        "Type_of_order": "Buffet",
+        "Type_of_vehicle": "electric_scooter",
+        "multiple_deliveries": 1,
+        "Festival": "No",
+        "City": "Metropolitian"
+    },
+    "comparison_type": "personnel_ratings"
+}
+
+EXPECTED RESPONSE:
+
+{
+    "success": true,
+    "base_prediction": 20.0,
+    "comparison_type": "personnel_ratings",
+    "x_axis_label": "Personnel Rating (⭐)",
+    "count": 4,
+    "comparisons": [
+        {
+            "label": "Delivery Person ⭐ 3.5 @ 5-10 km",
+            "predicted_time": 24.5
+        },
+        {
+            "label": "Delivery Person ⭐ 4.0 @ 5-10 km",
+            "predicted_time": 22.8
+        },
+        {
+            "label": "Delivery Person ⭐ 4.5 @ 5-10 km",
+            "predicted_time": 20.0
+        },
+        {
+            "label": "Delivery Person ⭐ 5.0 @ 5-10 km",
+            "predicted_time": 18.2
+        }
+    ],
+    "insights": {
+        "base_prediction": 20.0,
+        "fastest_option": "Delivery Person ⭐ 5.0 @ 5-10 km",
+        "fastest_time": 18.2,
+        "slowest_option": "Delivery Person ⭐ 3.5 @ 5-10 km",
+        "slowest_time": 24.5,
+        "average_time": 21.4,
+        "time_variance": 6.3,
+        "recommendation": "Higher-rated personnel deliver 5-15% faster. Match to SLA requirements."
+    },
+    "message": "Generated 4 comparison predictions"
+}
+
+BUSINESS INTERPRETATION:
+- PERSONNEL IMPACT: 5-star delivery person is 25% faster than 3.5-star
+- RESOURCE ALLOCATION: Assign 5-star personnel to high-priority/time-sensitive orders
+- SLA STRATEGY: Premium customers → 5-star personnel, Standard customers → 4-star personnel
+
+=============================================================================
+ERROR RESPONSES
+=============================================================================
+
+1. Missing base_delivery:
+{
+    "success": false,
+    "message": "Missing required field: base_delivery"
+}
+
+2. Invalid comparison_type:
+{
+    "success": false,
+    "message": "Invalid comparison_type. Must be one of: distance_ranges, vehicle_types, weather_impact, traffic_impact, personnel_ratings"
+}
+
+3. Invalid base_delivery data:
+{
+    "success": false,
+    "message": "Failed to generate base prediction: [specific error]"
+}
+
+4. Model not loaded:
+{
+    "success": false,
+    "message": "Model not loaded - run python train_model.py"
+}
+
+=============================================================================
+RESPONSE STRUCTURE
+=============================================================================
+
+SUCCESS Response (HTTP 200):
+{
+    "success": true,
+    "base_prediction": float,              // Predicted time for base delivery
+    "comparison_type": string,             // Type of comparison performed
+    "x_axis_label": string,                // Label for chart X-axis
+    "count": int,                          // Number of scenarios analyzed
+    "comparisons": [                       // Array of predictions
+        {
+            "label": string,               // Scenario description
+            "predicted_time": float        // Predicted delivery time in minutes
+        }
+    ],
+    "insights": {                          // Business insights
+        "base_prediction": float,
+        "fastest_option": string,
+        "fastest_time": float,
+        "slowest_option": string,
+        "slowest_time": float,
+        "average_time": float,
+        "time_variance": float,            // Range: slowest - fastest
+        "recommendation": string,          // Business recommendation
+        // Additional fields depend on comparison_type:
+        "cost_effective": string,          // (vehicle_types only)
+        "weather_impact": string,          // (weather_impact only)
+        "traffic_impact": string           // (traffic_impact only)
+    },
+    "message": string
+}
+
+ERROR Response (HTTP 400/500):
+{
+    "success": false,
+    "message": string                      // Error description
+}
+
+=============================================================================
+USE CASE RECOMMENDATIONS
+=============================================================================
+
+ADMIN DASHBOARD FEATURES:
+
+1. Distance-based SLA Planning:
+   - Use distance_ranges comparison
+   - Set delivery SLA windows by distance band
+   - Example: 1-5km → 20min SLA, 20-50km → 60min SLA
+
+2. Cost Optimization Report:
+   - Use vehicle_types comparison
+   - Calculate fuel/maintenance costs for each vehicle
+   - Recommend optimal vehicle for each route type
+
+3. Weather Risk Assessment:
+   - Use weather_impact comparison
+   - Flag high-variance scenarios (sandstorms, fog)
+   - Auto-adjust SLA by 10-20% during bad weather
+
+4. Peak-Hour Optimization:
+   - Use traffic_impact comparison
+   - Recommend off-peak delivery slots
+   - Calculate rush-hour surcharges
+
+5. Personnel Assignment:
+   - Use personnel_ratings comparison
+   - Assign high-rated personnel to premium orders
+   - Track performance improvement over time
+
+=============================================================================
+INTEGRATION NOTES
+=============================================================================
+
+- All predictions use same model as /api/predict (consistency guaranteed)
+- Comparison generation is fast (~500ms for 5 scenarios)
+- Cache results in frontend for 5 minutes to reduce API calls
+- Display results as line/bar chart with distance on X-axis
+- Show insights box below chart for business recommendations
+
+=============================================================================
+"""
